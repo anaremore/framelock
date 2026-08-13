@@ -1,0 +1,273 @@
+<Window x:Class="FrameLock.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="FrameLock"
+        Icon="{StaticResource AppIcon}"
+        Width="540"
+        Height="690"
+        MinWidth="480"
+        MinHeight="620"
+        FontFamily="Segoe UI Variable Text, Segoe UI"
+        FontSize="14"
+        Foreground="{DynamicResource TextPrimaryBrush}"
+        Background="{DynamicResource AppBackgroundBrush}"
+        WindowStartupLocation="CenterScreen"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        AutomationProperties.Name="FrameLock window">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="28,24,28,28">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,24">
+                <TextBlock FontFamily="Segoe UI Variable Display, Segoe UI"
+                           FontSize="26"
+                           FontWeight="SemiBold"
+                           Text="FrameLock" />
+                <TextBlock Margin="0,4,0,0"
+                           Style="{StaticResource SecondaryTextStyle}"
+                           Text="Make any Windows app the perfect size for recording or sharing."
+                           TextWrapping="Wrap" />
+                <ProgressBar Height="3"
+                             Margin="0,14,0,0"
+                             IsIndeterminate="True"
+                             Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"
+                             AutomationProperties.Name="FrameLock is working" />
+            </StackPanel>
+
+            <Border x:Name="ErrorBorder"
+                    Grid.Row="1"
+                    Margin="0,0,0,16"
+                    Padding="12"
+                    Background="{DynamicResource ErrorBackgroundBrush}"
+                    BorderBrush="{DynamicResource ErrorBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    AutomationProperties.LiveSetting="Assertive">
+                <DockPanel>
+                    <TextBlock Margin="0,0,8,0"
+                               VerticalAlignment="Top"
+                               FontFamily="Segoe Fluent Icons"
+                               Foreground="{DynamicResource ErrorBrush}"
+                               Text="&#xE783;" />
+                    <TextBlock Foreground="{DynamicResource ErrorBrush}"
+                               Text="{Binding ErrorMessage}"
+                               TextWrapping="Wrap" />
+                </DockPanel>
+            </Border>
+
+            <Grid Grid.Row="2">
+                <StackPanel Visibility="{Binding IsLocked, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                    <TextBlock Style="{StaticResource SectionLabelStyle}" Text="Application" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox Grid.Column="0"
+                                  Margin="0,0,8,0"
+                                  ItemsSource="{Binding Windows}"
+                                  SelectedItem="{Binding SelectedWindow}"
+                                  IsEnabled="{Binding HasWindows}"
+                                  AutomationProperties.Name="Application window">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="2,3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="32" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid Grid.Column="0" Width="24" Height="24" VerticalAlignment="Center">
+                                            <Border x:Name="IconFallback"
+                                                    Background="{DynamicResource SurfaceAltBrush}"
+                                                    CornerRadius="5"
+                                                    Visibility="Collapsed">
+                                                <TextBlock HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="12"
+                                                           FontWeight="SemiBold"
+                                                           Text="{Binding Initial}" />
+                                            </Border>
+                                            <Image x:Name="WindowIcon" Width="24" Height="24" Source="{Binding Icon}" />
+                                        </Grid>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock FontWeight="SemiBold" Text="{Binding ApplicationName}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock FontSize="12"
+                                                       Foreground="{DynamicResource ComboSecondaryTextBrush}"
+                                                       Text="{Binding Title}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </Grid>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Icon}" Value="{x:Null}">
+                                            <Setter TargetName="IconFallback" Property="Visibility" Value="Visible" />
+                                            <Setter TargetName="WindowIcon" Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <Button Grid.Column="1"
+                                Width="48"
+                                Padding="0"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Command="{Binding RefreshCommand}"
+                                ToolTip="Refresh running applications"
+                                AutomationProperties.Name="Refresh running applications">
+                            <TextBlock FontFamily="Segoe Fluent Icons" FontSize="16" Text="&#xE72C;" />
+                        </Button>
+                    </Grid>
+
+                    <Border Margin="0,12,0,0"
+                            Padding="16"
+                            Background="{DynamicResource SurfaceAltBrush}"
+                            CornerRadius="8"
+                            Visibility="{Binding HasWindows, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock HorizontalAlignment="Center" FontWeight="SemiBold" Text="No applications found" />
+                            <TextBlock Margin="0,4,0,0"
+                                       HorizontalAlignment="Center"
+                                       Style="{StaticResource SecondaryTextStyle}"
+                                       Text="Open an application, then choose Refresh."
+                                       TextAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Margin="0,24,0,8" Style="{StaticResource SectionLabelStyle}" Text="Content resolution" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="40" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding WidthText, UpdateSourceTrigger=PropertyChanged}"
+                                 HorizontalContentAlignment="Right"
+                                 InputMethod.IsInputMethodEnabled="False"
+                                 AutomationProperties.Name="Content width in pixels" />
+                        <TextBlock Grid.Column="1"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   Text="×" />
+                        <TextBox Grid.Column="2"
+                                 Text="{Binding HeightText, UpdateSourceTrigger=PropertyChanged}"
+                                 HorizontalContentAlignment="Right"
+                                 InputMethod.IsInputMethodEnabled="False"
+                                 AutomationProperties.Name="Content height in pixels" />
+                    </Grid>
+
+                    <UniformGrid Margin="0,10,0,0" Columns="3" Rows="2">
+                        <Button Margin="0,0,5,5" Style="{StaticResource PresetButtonStyle}" Command="{Binding UsePresetCommand}" CommandParameter="3840,2160" Content="4K" ToolTip="3840 × 2160" />
+                        <Button Margin="3,0,3,5" Style="{StaticResource PresetButtonStyle}" Command="{Binding UsePresetCommand}" CommandParameter="2560,1440" Content="1440p" ToolTip="2560 × 1440" />
+                        <Button Margin="5,0,0,5" Style="{StaticResource PresetButtonStyle}" Command="{Binding UsePresetCommand}" CommandParameter="1920,1080" Content="1080p" ToolTip="1920 × 1080" />
+                        <Button Margin="0,5,5,0" Style="{StaticResource PresetButtonStyle}" Command="{Binding UsePresetCommand}" CommandParameter="1600,900" Content="900p" ToolTip="1600 × 900" />
+                        <Button Margin="3,5,3,0" Style="{StaticResource PresetButtonStyle}" Command="{Binding UsePresetCommand}" CommandParameter="1280,720" Content="720p" ToolTip="1280 × 720" />
+                        <Button Margin="5,5,0,0" Style="{StaticResource PresetButtonStyle}" Command="{Binding UsePresetCommand}" CommandParameter="1080,1920" Content="Portrait" ToolTip="1080 × 1920" />
+                    </UniformGrid>
+
+                    <Border Margin="0,24,0,16"
+                            Padding="16"
+                            Background="{DynamicResource SurfaceBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" Text="CURRENT" />
+                                <TextBlock Margin="0,7,0,0" FontWeight="SemiBold" Text="{Binding CurrentContent}" />
+                                <TextBlock Margin="0,3,0,0" Style="{StaticResource SecondaryTextStyle}" Text="{Binding CurrentWindow}" />
+                                <TextBlock Margin="0,3,0,0" Style="{StaticResource SecondaryTextStyle}" Text="{Binding CurrentDpi}" />
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding CenterCommand}"
+                                    Content="_Center" />
+                        </Grid>
+                    </Border>
+
+                    <Button Style="{StaticResource PrimaryButtonStyle}"
+                            Command="{Binding LockCommand}"
+                            Content="_Lock content size"
+                            IsDefault="True"
+                            AutomationProperties.HelpText="Resize the selected application's content area and keep it at the chosen resolution." />
+                </StackPanel>
+
+                <StackPanel Visibility="{Binding IsLocked, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Border Padding="24"
+                            Background="{DynamicResource SurfaceBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12">
+                        <StackPanel>
+                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                <Ellipse Width="10" Height="10" Margin="0,0,8,0" Fill="{DynamicResource SuccessBrush}" />
+                                <TextBlock FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" Text="{Binding LockedStatus}" />
+                            </StackPanel>
+                            <TextBlock Margin="0,20,0,0"
+                                       HorizontalAlignment="Center"
+                                       FontSize="22"
+                                       FontWeight="SemiBold"
+                                       Text="{Binding LockedApplicationName}"
+                                       TextAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Margin="24,5,24,0"
+                                       HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       Text="{Binding LockedTitle}"
+                                       TextAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Margin="0,22,0,0"
+                                       HorizontalAlignment="Center"
+                                       FontFamily="Segoe UI Variable Display, Segoe UI"
+                                       FontSize="32"
+                                       FontWeight="SemiBold"
+                                       Text="{Binding LockedResolution}" />
+                            <TextBlock Margin="0,4,0,0"
+                                       HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       Text="content area" />
+                            <Border Margin="0,24,0,0" Padding="14" Background="{DynamicResource SurfaceAltBrush}" CornerRadius="8">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock FontWeight="SemiBold" Text="{Binding CurrentContent}" />
+                                    <TextBlock Margin="0,3,0,0" Style="{StaticResource SecondaryTextStyle}" Text="{Binding CurrentWindow}" />
+                                    <TextBlock Margin="0,3,0,0" Style="{StaticResource SecondaryTextStyle}" Text="{Binding CurrentDpi}" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding CenterCommand}" Content="_Center" />
+                        <Button Grid.Column="2" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding UnlockCommand}" Content="_Unlock" IsCancel="True" />
+                    </Grid>
+
+                    <TextBlock Margin="12,18,12,0"
+                               HorizontalAlignment="Center"
+                               Style="{StaticResource SecondaryTextStyle}"
+                               Text="FrameLock corrects size changes without preventing normal window movement."
+                               TextAlignment="Center"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Window>
