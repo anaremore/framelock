@@ -43,15 +43,15 @@ dotnet run --project src/FrameLock.App/FrameLock.App.csproj -c Release --no-buil
 
 The solution has no third-party package dependencies. WPF and all Win32 interop support come from the installed .NET Windows Desktop SDK.
 
-### Create a local release folder
+### Create a release package
 
 ```powershell
-dotnet publish src/FrameLock.App/FrameLock.App.csproj `
-  -c Release `
-  -o artifacts/FrameLock
+.\tools\Build-Release.ps1 -RunIntegrationTests
 ```
 
-Run `artifacts\FrameLock\FrameLock.exe`. Keep the published files together when copying the application. This framework-dependent build requires the .NET 10 Desktop Runtime on the destination computer. FrameLock v1 does not yet ship an installer, single-file package, or code-signed binary.
+The script restores and builds the Release configuration, runs the tests, publishes the application, and creates `artifacts\FrameLock-1.0.0-windows.zip` with a neighboring SHA-256 checksum file. Omit `-RunIntegrationTests` for a package build that runs only the deterministic tests.
+
+Extract the archive and run `FrameLock.exe`. Keep the published files together when copying the application. This framework-dependent build requires the .NET 10 Desktop Runtime on the destination computer. FrameLock v1 does not yet ship an installer, single-file package, or code-signed binary.
 
 ## Usage
 
