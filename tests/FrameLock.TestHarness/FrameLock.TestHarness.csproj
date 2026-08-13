@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FrameLock.Core\FrameLock.Core.csproj" />
+    <ProjectReference Include="..\..\src\FrameLock.Windows\FrameLock.Windows.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>FrameLock.TestHarness</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+</Project>

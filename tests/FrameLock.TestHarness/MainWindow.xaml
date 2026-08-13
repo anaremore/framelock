@@ -1,0 +1,28 @@
+<Window x:Class="FrameLock.TestHarness.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="FrameLock Integration Target"
+        Width="900"
+        Height="650"
+        MinWidth="240"
+        MinHeight="200"
+        WindowStartupLocation="CenterScreen"
+        UseLayoutRounding="True">
+    <Grid Background="#F4F6F8">
+        <Border Margin="32" Padding="28" Background="White" BorderBrush="#D5DAE1" BorderThickness="1" CornerRadius="12">
+            <StackPanel>
+                <TextBlock FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="26" FontWeight="SemiBold" Text="FrameLock test window" />
+                <TextBlock Margin="0,8,0,0" Foreground="#56616F" Text="This window reports its physical client size and can intentionally resize itself." TextWrapping="Wrap" />
+                <Border Margin="0,28,0,0" Padding="20" Background="#EFF4F8" CornerRadius="8">
+                    <StackPanel>
+                        <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="#56616F" Text="MEASURED CLIENT AREA" />
+                        <TextBlock x:Name="ClientSizeText" Margin="0,6,0,0" FontSize="34" FontWeight="SemiBold" Text="Measuring…" />
+                        <TextBlock x:Name="DpiText" Margin="0,4,0,0" Foreground="#56616F" />
+                        <TextBlock x:Name="HandleText" Margin="0,4,0,0" Foreground="#56616F" />
+                    </StackPanel>
+                </Border>
+                <Button Margin="0,24,0,0" Width="180" Height="42" HorizontalAlignment="Left" Click="OnResizeNow" Content="Resize myself" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

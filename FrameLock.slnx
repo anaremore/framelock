@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FrameLock.App/FrameLock.App.csproj" />
+    <Project Path="src/FrameLock.Core/FrameLock.Core.csproj" />
+    <Project Path="src/FrameLock.Windows/FrameLock.Windows.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FrameLock.TestHarness/FrameLock.TestHarness.csproj" />
+    <Project Path="tests/FrameLock.Tests/FrameLock.Tests.csproj" />
+  </Folder>
+</Solution>
