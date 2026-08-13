@@ -33,6 +33,13 @@ public static class FrameLockCaptureNative
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool PrintWindow(IntPtr windowHandle, IntPtr deviceContext, uint flags);
+
+    [DllImport("dwmapi.dll")]
+    public static extern int DwmGetWindowAttribute(
+        IntPtr windowHandle,
+        int attribute,
+        out Rect attributeValue,
+        int attributeSize);
 }
 '@
 
@@ -54,6 +61,31 @@ $width = $windowRectangle.Right - $windowRectangle.Left
 $height = $windowRectangle.Bottom - $windowRectangle.Top
 if ($width -le 0 -or $height -le 0) {
     throw "The target window has an invalid size."
+}
+
+$cropLeft = 0
+$cropTop = 0
+$visibleWidth = $width
+$visibleHeight = $height
+$visibleRectangle = New-Object FrameLockCaptureNative+Rect
+$extendedFrameBounds = 9
+$dwmResult = [FrameLockCaptureNative]::DwmGetWindowAttribute(
+    $targetProcess.MainWindowHandle,
+    $extendedFrameBounds,
+    [ref]$visibleRectangle,
+    [System.Runtime.InteropServices.Marshal]::SizeOf($visibleRectangle))
+
+if ($dwmResult -eq 0 -and
+    $visibleRectangle.Left -ge $windowRectangle.Left -and
+    $visibleRectangle.Top -ge $windowRectangle.Top -and
+    $visibleRectangle.Right -le $windowRectangle.Right -and
+    $visibleRectangle.Bottom -le $windowRectangle.Bottom -and
+    $visibleRectangle.Right -gt $visibleRectangle.Left -and
+    $visibleRectangle.Bottom -gt $visibleRectangle.Top) {
+    $cropLeft = $visibleRectangle.Left - $windowRectangle.Left
+    $cropTop = $visibleRectangle.Top - $windowRectangle.Top
+    $visibleWidth = $visibleRectangle.Right - $visibleRectangle.Left
+    $visibleHeight = $visibleRectangle.Bottom - $visibleRectangle.Top
 }
 
 $resolvedOutput = [System.IO.Path]::GetFullPath($OutputPath)
@@ -82,7 +114,30 @@ try {
             0,
             [System.Drawing.Size]::new($width, $height))
     }
-    $bitmap.Save($resolvedOutput, [System.Drawing.Imaging.ImageFormat]::Png)
+    if ($cropLeft -eq 0 -and
+        $cropTop -eq 0 -and
+        $visibleWidth -eq $width -and
+        $visibleHeight -eq $height) {
+        $bitmap.Save($resolvedOutput, [System.Drawing.Imaging.ImageFormat]::Png)
+    }
+    else {
+        $visibleBitmap = New-Object System.Drawing.Bitmap($visibleWidth, $visibleHeight)
+        $visibleGraphics = [System.Drawing.Graphics]::FromImage($visibleBitmap)
+        try {
+            $destination = [System.Drawing.Rectangle]::new(0, 0, $visibleWidth, $visibleHeight)
+            $source = [System.Drawing.Rectangle]::new($cropLeft, $cropTop, $visibleWidth, $visibleHeight)
+            $visibleGraphics.DrawImage(
+                $bitmap,
+                $destination,
+                $source,
+                [System.Drawing.GraphicsUnit]::Pixel)
+            $visibleBitmap.Save($resolvedOutput, [System.Drawing.Imaging.ImageFormat]::Png)
+        }
+        finally {
+            $visibleGraphics.Dispose()
+            $visibleBitmap.Dispose()
+        }
+    }
 }
 finally {
     $graphics.Dispose()
